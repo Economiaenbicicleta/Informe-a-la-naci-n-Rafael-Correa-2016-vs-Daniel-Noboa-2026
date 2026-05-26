@@ -59,6 +59,11 @@ body {
 
 /* ===== TOPBAR ===== */
 #topbar {
+position:fixed !important;
+left:0;
+right:0;
+top:0;
+width:100%;
   position: fixed;
   top: 0; left: 0; right: 0;
   z-index: 1000;
@@ -1042,6 +1047,45 @@ body {
   }
 }
 
+
+html, body {
+  overflow-x: hidden !important;
+  width: 100%;
+}
+* {
+  max-width: 100%;
+}
+#main {
+  overflow-x: hidden !important;
+}
+
+
+@media (max-width: 768px){
+  body{
+    overflow-x:hidden !important;
+  }
+  #topbar{
+    padding:0 0.75rem !important;
+  }
+  .tb-actions{
+    gap:0.45rem !important;
+  }
+  .btn-action{
+    font-size:0.55rem !important;
+    padding:0.32rem 0.6rem !important;
+    white-space:nowrap;
+  }
+  #main{
+    width:100% !important;
+    margin-left:0 !important;
+  }
+  .section,
+  .hero-content{
+    width:100% !important;
+    overflow-x:hidden !important;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -1602,78 +1646,33 @@ function shareWA(e) {
 }
 
 // ===== PDF =====
-async function exportPDF() {
-  var main = document.getElementById('main');
+async 
+function exportPDF() {
+  const element = document.getElementById('main');
 
-  function wait(ms) {
-    return new Promise(function(resolve){ setTimeout(resolve, ms); });
-  }
-
-  async function waitForImages() {
-    var imgs = Array.prototype.slice.call(document.images || []);
-    await Promise.all(imgs.map(function(img) {
-      if (img.complete && img.naturalWidth !== 0) return Promise.resolve();
-      if (img.decode) return img.decode().catch(function(){});
-      return new Promise(function(resolve) {
-        img.onload = img.onerror = resolve;
-      });
-    }));
-  }
-
-  try {
-    document.body.classList.add('pdf-exporting');
-
-    document.querySelectorAll('.reveal').forEach(function(el) {
-      el.classList.add('visible');
-      el.style.opacity = '1';
-      el.style.transform = 'none';
-    });
-
-    await waitForImages();
-    await wait(450);
-
-    if (typeof html2pdf === 'undefined') {
-      window.print();
-      return;
+  const opt = {
+    margin: [8,8,8,8],
+    filename: 'ecuador-informe-2016-2026.pdf',
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: {
+      scale: 2,
+      useCORS: true,
+      scrollY: 0,
+      windowWidth: document.body.scrollWidth
+    },
+    jsPDF: {
+      unit: 'mm',
+      format: 'a4',
+      orientation: 'portrait'
+    },
+    pagebreak: {
+      mode: ['avoid-all', 'css', 'legacy']
     }
+  };
 
-    var options = {
-      margin: [18, 18, 18, 18],
-      filename: 'Ecuador_2016_vs_2026_informe_comparativo.pdf',
-      image: { type: 'jpeg', quality: 0.96 },
-      html2canvas: {
-        scale: Math.min(2, window.devicePixelRatio || 1.5),
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: '#080B12',
-        logging: false,
-        scrollX: 0,
-        scrollY: 0,
-        windowWidth: document.documentElement.scrollWidth,
-        windowHeight: document.documentElement.scrollHeight
-      },
-      jsPDF: {
-        unit: 'pt',
-        format: 'a4',
-        orientation: 'portrait',
-        compress: true
-      },
-      pagebreak: {
-        mode: ['css', 'legacy'],
-        avoid: ['.compare-card', '.chart-wrap', '.verdict-box', '.kpi-card', '.img-section', 'table']
-      }
-    };
-
-    await html2pdf().set(options).from(main).save();
-  } catch (err) {
-    console.error('Error exportando PDF:', err);
-    window.print();
-  } finally {
-    setTimeout(function(){
-      document.body.classList.remove('pdf-exporting');
-    }, 500);
-  }
+  html2pdf().set(opt).from(element).save();
 }
+
 
 // ===== SCROLL SPY =====
 var navItems = document.querySelectorAll('.nav-item');
